@@ -11,6 +11,33 @@
 #include <vector>
 #include <windows.h>
 namespace tui {
+    // Color handling
+    enum Color {
+        BLACK        = 0x0000,
+        DARK_BLUE    = 0x0001,
+        DARK_GREEN   = 0x0002,
+        DARK_CYAN    = 0x0003,
+        DARK_RED     = 0x0004,
+        DARK_MAGENTA = 0x0005,
+        DARK_YELLOW  = 0x0006,
+        GRAY         = 0x0007,
+        DARK_GRAY    = 0x0008,
+        BLUE         = 0x0009,
+        GREEN        = 0x000A,
+        CYAN         = 0x000B,
+        RED          = 0x000C,
+        MAGENTA      = 0x000D,
+        YELLOW       = 0x000E,
+        WHITE        = 0x000F
+    };
+
+    // Return color after bitwise operation as SHORT
+    // Combines foreground and background
+    SHORT get_color(SHORT foreground, SHORT background) {
+        return (foreground | (background << 4));
+    }
+
+    // Event handling
     enum EventType {
         KEYDOWN,
         MOUSEBUTTONDOWN,
@@ -23,7 +50,22 @@ namespace tui {
     };
 
     // Widget definitions
-    struct Paragraph {
+    struct Widget {
+        struct {
+            SHORT foreground = WHITE;
+            SHORT background = BLACK;
+        } border_style;
+        struct {
+            SHORT foreground = WHITE;
+            SHORT background = BLACK;
+        } text_style;
+        struct {
+            SHORT foreground = WHITE;
+            SHORT background = BLACK;
+        } title_style;
+    };
+
+    struct Paragraph : Widget {
         std::string title;
         std::string text;
         int x;      // Position of left side of paragraph
@@ -33,7 +75,7 @@ namespace tui {
         bool border = true;
     };
 
-    struct List {
+    struct List : Widget{
         std::string title;
         std::vector<std::string> rows;
         int x;      // Position of left side of list
@@ -75,6 +117,7 @@ namespace tui {
         );
     }
 
+    // Exception handling
     class TUIException : public std::runtime_error {
         public:
             template<typename... Args>
@@ -185,6 +228,10 @@ namespace tui {
             // Draw border with given widget dimensions
             template<typename Widget>
             void draw_border(Widget widget) {
+                SHORT border_color = get_color(
+                    widget.border_style.foreground, 
+                    widget.border_style.background
+                );
                 for(int i = widget.y; i < widget.y + widget.height; i++) {
                     for(int j = widget.x; j < widget.x + widget.width; j++) {
                         if(
@@ -192,11 +239,11 @@ namespace tui {
                             (i == widget.y && j == (widget.x + widget.width) - 1) ||
                             (i == (widget.y + widget.height) - 1 && j == widget.x) ||
                             (i == (widget.y + widget.height) - 1 && j == (widget.x + widget.width) - 1)) {
-                            draw_char(j, i, '+');
+                            draw_char(j, i, '+', border_color);
                         } else if(i == widget.y || i == (widget.y + widget.height) - 1) {
-                            draw_char(j, i, '-');
+                            draw_char(j, i, '-', border_color);
                         } else if(j == widget.x || j == (widget.x + widget.width) - 1) {
-                            draw_char(j, i, '|');
+                            draw_char(j, i, '|', border_color);
                         }
                     }
                 }
@@ -205,8 +252,12 @@ namespace tui {
             // Draw title
             template<typename Widget>
             void draw_title(Widget widget) {
+                SHORT title_color = get_color(
+                    widget.title_style.foreground, 
+                    widget.title_style.background
+                );
                 for(int i = widget.x + 2; i < widget.x + std::min(widget.width, (int)(widget.title.length()) + 2); i++) {
-                    draw_char(i, widget.y, widget.title[i - (widget.x + 2)]);
+                    draw_char(i, widget.y, widget.title[i - (widget.x + 2)], title_color);
                 }
             }
 
@@ -270,6 +321,11 @@ namespace tui {
         if(paragraph.title.empty() == false) {
             draw_title(paragraph);
         }
+        // Get color
+        SHORT text_color = get_color(
+            paragraph.text_style.foreground, 
+            paragraph.text_style.background
+        );
         // Draw text
         int maximum_characters = (paragraph.width - 2) * (paragraph.height - 2);
         for(int i = paragraph.y + 1; i < paragraph.y + paragraph.height - 1; i++) {
@@ -278,7 +334,7 @@ namespace tui {
                 int current_column = j - (paragraph.x + 1);
                 int current_index = (current_row * (paragraph.width - 2)) + current_column;
                 if(current_index < paragraph.text.length()) {
-                    draw_char(j, i, paragraph.text[current_index]);
+                    draw_char(j, i, paragraph.text[current_index], text_color);
                 } else {
                     // Paragraph text is shorter than maximum characters
                     break;
@@ -290,7 +346,7 @@ namespace tui {
             int last_row = (paragraph.y + paragraph.height) - 2;
             for(int i = 0; i < 3; i++) {
                 int current_column = ((paragraph.x + paragraph.width) - 2) - i;
-                draw_char(current_column, last_row, '.');
+                draw_char(current_column, last_row, '.', text_color);
             }
         }
     }
@@ -303,19 +359,25 @@ namespace tui {
         if(list.title.empty() == false) {
             draw_title(list);
         }
+        // Get color
+        SHORT text_color = get_color(
+            list.text_style.foreground, 
+            list.text_style.background
+        );
         for(int i = list.y + 1; i < list.y + list.height - 1; i++) {
             // Calculate current row with list's first element
             int current_row = list.first_element + (i - (list.y + 1));
             for(int j = list.x + 1; j < list.x + list.width - 1; j++) {
                 int current_column = j - (list.x + 1);
+                // Naively assume character is empty
+                draw_char(j, i, ' ');
                 if(current_row < list.rows.size() && current_column < list.rows[current_row].length()) {
                     if(list.rows[current_row].length() > list.width - 2 && j >= (list.x + list.width - 4)) {
                         // Draw ellipsis
-                        draw_char(j, i, '.');
+                        draw_char(j, i, '.', text_color);
                     } else {
-                        draw_char(j, i, list.rows[current_row][current_column]);
+                        draw_char(j, i, list.rows[current_row][current_column], text_color);
                     }
-
                 } else {
                     // No more elements to print
                     break;
