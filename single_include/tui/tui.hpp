@@ -13,12 +13,13 @@
 namespace tui {
     enum EventType {
         KEYDOWN,
+        MOUSEBUTTONDOWN,
         UNDEFINED
     };
 
     struct Event {
         EventType type = UNDEFINED;
-        std::string key;
+        uint8_t key;
     };
 
     // Widget definitions
@@ -219,11 +220,16 @@ namespace tui {
             // Poll for event
             bool poll_event(Event &event) {
                 event = Event{};
-                for(char c = 'A'; c <= 'Z'; c++) {
-                    if(GetKeyState(c) & 0x8000) {
-                        event.type = KEYDOWN;
-                        event.key = tolower(c);
-                        while(GetKeyState(c) & 0x8000);
+                for(uint8_t k = VK_LBUTTON; k <= VK_OEM_CLEAR; k++) {
+                    if(GetKeyState(k) & 0x8000) {
+                        if(k >= VK_LBUTTON && k <= VK_XBUTTON2 && k != VK_CANCEL) {
+                            event.type = MOUSEBUTTONDOWN;
+                        } else {
+                            event.type = KEYDOWN;
+                        }
+                        event.key = k;
+                        // Wait for key unpress
+                        while(GetKeyState(k) & 0x8000);
                     }
                 }
                 if(event.type != UNDEFINED) {
