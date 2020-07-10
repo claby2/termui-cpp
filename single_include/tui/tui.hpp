@@ -63,25 +63,24 @@ namespace tui {
             SHORT foreground = WHITE;
             SHORT background = BLACK;
         } title_style;
+
+        int x;      // Position of left side of widget
+        int y;      // Position of top of widget
+        int width;  // Width of widget
+        int height; // Height of widget
+
+        void set_dimensions(int x, int y, int width, int height);
     };
 
     struct Paragraph : Widget {
         std::string title;
         std::string text;
-        int x;      // Position of left side of paragraph
-        int y;      // Position of top of paragraph
-        int width;  // Width of paragraph
-        int height; // Height of paragraph
         bool border = true;
     };
 
     struct List : Widget{
         std::string title;
         std::vector<std::string> rows;
-        int x;      // Position of left side of list
-        int y;      // Position of top of list
-        int width;  // Width of list
-        int height; // Height of list
         int first_element = 0; // Element at the top of the list
         bool border = true;
 
@@ -404,6 +403,14 @@ namespace tui {
                 }
             }
         }
+    }
+
+    // Widget set dimensions shortcut
+    void Widget::set_dimensions(int x_, int y_, int width_, int height_) {
+        x = x_;
+        y = y_;
+        width = width_;
+        height = height_;
     }
 
     // Scroll up the list

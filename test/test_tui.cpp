@@ -459,6 +459,22 @@ TEST_CASE("Widget Equality", "[widget_equality]") {
     }
 }
 
+TEST_CASE("Widget Set Dimensions", "[widget_set_dimensions]") {
+    tui::Paragraph paragraph;
+    paragraph.set_dimensions(1, 2, 3, 4);
+    REQUIRE(paragraph.x == 1);
+    REQUIRE(paragraph.y == 2);
+    REQUIRE(paragraph.width == 3);
+    REQUIRE(paragraph.height == 4);
+    
+    tui::List list;
+    list.set_dimensions(5, 6, 7, 8);
+    REQUIRE(list.x == 5);
+    REQUIRE(list.y == 6);
+    REQUIRE(list.width == 7);
+    REQUIRE(list.height == 8);
+}
+
 TEST_CASE("Color Handling", "[color_handling]") {
     // Test color constants and bitwise operations
     REQUIRE(tui::get_color(tui::BLACK, tui::WHITE)            == 0x00F0);
