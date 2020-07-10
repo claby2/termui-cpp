@@ -100,7 +100,13 @@ namespace tui {
             paragraph1.y == paragraph2.y &&
             paragraph1.width == paragraph2.width &&
             paragraph1.height == paragraph2.height &&
-            paragraph1.border == paragraph2.border
+            paragraph1.border == paragraph2.border &&
+            paragraph1.border_style.foreground == paragraph2.border_style.foreground &&
+            paragraph1.border_style.background == paragraph2.border_style.background &&
+            paragraph1.text_style.foreground == paragraph2.text_style.foreground &&
+            paragraph1.text_style.background == paragraph2.text_style.background &&
+            paragraph1.title_style.foreground == paragraph2.title_style.foreground  &&
+            paragraph1.title_style.background == paragraph2.title_style.background
         );
     };
 
@@ -108,12 +114,18 @@ namespace tui {
         return (
             list1.title == list2.title &&
             list1.rows == list2.rows &&
-            list1.x == list2.x &&            
+            list1.x == list2.x &&
             list1.y == list2.y &&
             list1.width == list2.width &&
             list1.height == list2.height &&
             list1.first_element == list2.first_element &&
-            list1.border == list2.border
+            list1.border == list2.border &&
+            list1.border_style.foreground == list2.border_style.foreground &&
+            list1.border_style.background == list2.border_style.background &&
+            list1.text_style.foreground == list2.text_style.foreground &&
+            list1.text_style.background == list2.text_style.background &&
+            list1.title_style.foreground == list2.title_style.foreground &&
+            list1.title_style.background == list2.title_style.background
         );
     }
 
