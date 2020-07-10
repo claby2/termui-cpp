@@ -216,14 +216,6 @@ namespace tui {
                 add(rest...);
             }
 
-            // Remove a widget to the window 
-            // using recursive template function
-            template<typename Widget, typename ... Rest>
-            void remove(Widget first, Rest... rest) {
-                remove(first);
-                remove(rest...);
-            }
-
             // Poll for event
             bool poll_event(Event &event) {
                 event = Event{};
@@ -251,8 +243,6 @@ namespace tui {
             SHORT columns_;
             SHORT rows_;
             CHAR_INFO *content; // Content to be rendered to buffer
-            std::vector<Paragraph> paragraphs;
-            std::vector<List> lists;
     };
 
     // Widget add to window method definitions
@@ -338,26 +328,6 @@ namespace tui {
                     // No more elements to print
                     break;
                 }
-            }
-        }
-    }
-
-    template<>
-    void Window::remove(Paragraph paragraph) {
-        for(int i = 0; i < paragraphs.size(); i++) {
-            if(paragraphs[i] == paragraph) {
-                paragraphs.erase(paragraphs.begin() + i);
-                break;
-            }
-        }
-    }
-
-    template<>
-    void Window::remove(List list) {
-        for(int i = 0; i < lists.size(); i++) {
-            if(lists[i] == list) {
-                lists.erase(lists.begin() + i);
-                break;
             }
         }
     }
