@@ -110,6 +110,13 @@ namespace tui {
                 return csbi.srWindow.Bottom - csbi.srWindow.Top;
             }
 
+            // Set window title
+            void set_title(std::string str) {
+                TCHAR new_title[str.size()+1];
+                new_title[str.size()] = 0;
+                std::copy(str.begin(), str.end(), new_title);
+                SetConsoleTitle(new_title);
+            }
 
             // Set character in content
             void draw_char(int x, int y, char c, SHORT color = 0x000F) {
@@ -190,7 +197,7 @@ namespace tui {
             }
         }
     }
-    
+
 };
 #elif __linux__
 // LINUX INCLUDES
