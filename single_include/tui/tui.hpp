@@ -2,6 +2,8 @@
 #define TUI_HPP
 
 #ifdef _WIN32
+#define NOMINMAX
+#include <algorithm>
 #include <stdexcept>
 #include <iostream>
 #include <stdlib.h>
@@ -9,6 +11,16 @@
 #include <vector>
 #include <windows.h>
 namespace tui {
+    enum EventType {
+        KEYDOWN,
+        UNDEFINED
+    };
+
+    struct Event {
+        EventType type = UNDEFINED;
+        std::string key;
+    };
+
     // Widget definitions
     struct Paragraph {
         std::string text;
@@ -18,6 +30,45 @@ namespace tui {
         int height; // Height of paragraph
         bool border = true;
     };
+
+    struct List {
+        std::vector<std::string> rows;
+        int x;      // Position of left side of list
+        int y;      // Position of top of list
+        int width;  // Width of list
+        int height; // Height of list
+        int first_element = 0; // Element at the top of the list
+        bool border = true;
+
+        template<typename Window>
+        void scroll_up(Window &window, int factor = 1);
+        template<typename Window>
+        void scroll_down(Window &window, int factor = 1);
+    };
+
+    // Widget comparisons
+    bool operator==(const Paragraph& paragraph1, const Paragraph& paragraph2) {
+        return (
+            paragraph1.text == paragraph2.text &&
+            paragraph1.x == paragraph2.x &&
+            paragraph1.y == paragraph2.y &&
+            paragraph1.width == paragraph2.width &&
+            paragraph1.height == paragraph2.height &&
+            paragraph1.border == paragraph2.border
+        );
+    };
+
+    bool operator==(const List& list1, const List& list2) {
+        return (
+            list1.rows == list2.rows &&
+            list1.x == list2.x &&            
+            list1.y == list2.y &&
+            list1.width == list2.width &&
+            list1.height == list2.height &&
+            list1.first_element == list2.first_element &&
+            list1.border == list2.border
+        );
+    }
 
     class TUIException : public std::runtime_error {
         public:
@@ -112,7 +163,7 @@ namespace tui {
 
             // Set window title
             void set_title(std::string str) {
-                TCHAR new_title[str.size()+1];
+                TCHAR new_title[MAX_PATH];
                 new_title[str.size()] = 0;
                 std::copy(str.begin(), str.end(), new_title);
                 SetConsoleTitle(new_title);
@@ -128,9 +179,33 @@ namespace tui {
 
             // Render (print) content
             void render() {
+                SHORT old_columns = columns_;
+                SHORT old_rows = rows_;
                 update_dimensions();
                 SMALL_RECT sr = {0, 0, (short)(columns_ - 1), (short)(rows_ - 1)};
-                WriteConsoleOutput(handle, content, {columns_, rows_}, {0, 0}, &sr);
+                if(old_columns != columns_ || old_rows != rows_) {
+                    // Resize has occurred
+                    hide_cursor();
+                    remove_scrollbar();
+                    // Override content
+                    CHAR_INFO *buffer_content = new CHAR_INFO[columns_ * rows_];
+                    for(int i = 0; i < rows_; i++) {
+                        for(int j = 0; j < columns_; j++) {
+                            if(i < old_rows && j < old_columns) {
+                                buffer_content[i * columns_ + j] = content[i * old_columns + j];
+                            } else {
+                                buffer_content[i * columns_ + j].Char.AsciiChar = ' ';
+                                buffer_content[i * columns_ + j].Attributes = 0x000F;
+                            }
+                        }
+                    }
+                    // Write with buffer content
+                    WriteConsoleOutput(handle, buffer_content, {columns_, rows_}, {0, 0}, &sr);
+                    delete buffer_content;
+                } else {
+                    // Write with content
+                    WriteConsoleOutput(handle, content, {columns_, rows_}, {0, 0}, &sr);
+                }
             }
 
             // Add a widget to the window 
@@ -139,6 +214,32 @@ namespace tui {
             void add(Widget first, Rest... rest) {
                 add(first);
                 add(rest...);
+            }
+
+            // Remove a widget to the window 
+            // using recursive template function
+            template<typename Widget, typename ... Rest>
+            void remove(Widget first, Rest... rest) {
+                remove(first);
+                remove(rest...);
+            }
+
+            // Poll for event
+            bool poll_event(Event &event) {
+                event = Event{};
+                for(char c = 'A'; c <= 'Z'; c++) {
+                    if(GetKeyState(c) & 0x8000) {
+                        event.type = KEYDOWN;
+                        event.key = tolower(c);
+                        while(GetKeyState(c) & 0x8000);
+                    }
+                }
+                if(event.type != UNDEFINED) {
+                    // Event has been registered
+                    return true;
+                } else {
+                    return false;
+                }
             }
 
         private:
@@ -150,6 +251,8 @@ namespace tui {
             SHORT columns_;
             SHORT rows_;
             CHAR_INFO *content; // Content to be rendered to buffer
+            std::vector<Paragraph> paragraphs;
+            std::vector<List> lists;
     };
 
     // Widget add to window method definitions
@@ -197,6 +300,104 @@ namespace tui {
             }
         }
     }
+
+    template<>
+    void Window::add(List list) {
+        if(list.border == true) {
+            // Draw border
+            for(int i = list.y; i < list.y + list.height; i++) {
+                for(int j = list.x; j < list.x + list.width; j++) {
+                    if(
+                        (i == list.y && j == list.x) || 
+                        (i == list.y && j == (list.x + list.width) - 1) ||
+                        (i == (list.y + list.height) - 1 && j == list.x) ||
+                        (i == (list.y + list.height) - 1 && j == (list.x + list.width) - 1)) {
+                        draw_char(j, i, '+');
+                    } else if(i == list.y || i == (list.y + list.height) - 1) {
+                        draw_char(j, i, '-');
+                    } else if(j == list.x || j == (list.x + list.width) - 1) {
+                        draw_char(j, i, '|');
+                    }
+                }
+            }
+        }
+        for(int i = list.y + 1; i < list.y + list.height - 1; i++) {
+            // Calculate current row with list's first element
+            int current_row = list.first_element + (i - (list.y + 1));
+            for(int j = list.x + 1; j < list.x + list.width - 1; j++) {
+                int current_column = j - (list.x + 1);
+                if(current_row < list.rows.size() && current_column < list.rows[current_row].length()) {
+                    if(list.rows[current_row].length() > list.width - 2 && j >= (list.x + list.width - 4)) {
+                        // Draw ellipsis
+                        draw_char(j, i, '.');
+                    } else {
+                        draw_char(j, i, list.rows[current_row][current_column]);
+                    }
+
+                } else {
+                    // No more elements to print
+                    break;
+                }
+            }
+        }
+    }
+
+    template<>
+    void Window::remove(Paragraph paragraph) {
+        for(int i = 0; i < paragraphs.size(); i++) {
+            if(paragraphs[i] == paragraph) {
+                paragraphs.erase(paragraphs.begin() + i);
+                break;
+            }
+        }
+    }
+
+    template<>
+    void Window::remove(List list) {
+        for(int i = 0; i < lists.size(); i++) {
+            if(lists[i] == list) {
+                lists.erase(lists.begin() + i);
+                break;
+            }
+        }
+    }
+
+    // Scroll up the list
+    template<>
+    void List::scroll_up(Window &window, int factor) {
+        if(rows.size() > height - 2) {
+            first_element = std::max(0, first_element - factor);
+            List list_widget;
+            list_widget.rows = rows;
+            list_widget.x = x;
+            list_widget.y = y;
+            list_widget.width = width;
+            list_widget.height = height;
+            list_widget.first_element = first_element;
+            list_widget.border = border;
+            window.add(list_widget);
+        }
+    }
+
+    // Scroll down the list
+    template<>
+    void List::scroll_down(Window &window, int factor) {
+        if(rows.size() > height - 2) {
+            first_element = std::min((int)rows.size() - (height - 2), first_element + factor);
+            List list_widget;
+            list_widget.rows = rows;
+            list_widget.x = x;
+            list_widget.y = y;
+            list_widget.width = width;
+            list_widget.height = height;
+            list_widget.first_element = first_element;
+            list_widget.border = border;
+            window.add(list_widget);
+        }
+    }
+
+    template<>
+    void Window::add(int n);
 
 };
 #elif __linux__
