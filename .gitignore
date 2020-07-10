@@ -1,4 +1,6 @@
 .vscode
 *.exe
+*.o
+test_output.txt
 
 examples
