@@ -301,6 +301,11 @@ namespace tui {
                 }
             }
 
+            // Return the content of the buffer
+            CHAR_INFO * get_content() {
+                return content;
+            }
+
         private:
             HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
             CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -341,7 +346,7 @@ namespace tui {
                 }
             }
         }
-        if(paragraph.text.length() > maximum_characters) {
+        if(paragraph.text.length() > maximum_characters && paragraph.width - 2 >= 3) {
             // Draw ellipsis
             int last_row = (paragraph.y + paragraph.height) - 2;
             for(int i = 0; i < 3; i++) {
@@ -374,7 +379,10 @@ namespace tui {
                 if(current_row < list.rows.size() && current_column < list.rows[current_row].length()) {
                     if(list.rows[current_row].length() > list.width - 2 && j >= (list.x + list.width - 4)) {
                         // Draw ellipsis
-                        draw_char(j, i, '.', text_color);
+                        if(list.width - 2 >= 3) {
+                            // Only draw ellipsis if inner width is at least 3
+                            draw_char(j, i, '.', text_color);
+                        }
                     } else {
                         draw_char(j, i, list.rows[current_row][current_column], text_color);
                     }
