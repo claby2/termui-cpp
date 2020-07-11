@@ -418,9 +418,6 @@ namespace tui {
                     } else {
                         draw_char(j, i, list.rows[current_row][current_column], text_color);
                     }
-                } else {
-                    // No more elements to print
-                    break;
                 }
             }
         }
