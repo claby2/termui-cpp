@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include <windows.h>
+#include <math.h>
 namespace tui {
     // Color handling
     enum Color {
@@ -90,6 +91,23 @@ namespace tui {
         void scroll_down(Window &window, int factor = 1);
     };
 
+    struct BarChart : Widget {
+        std::string title;
+        std::vector<int> data;
+        std::vector<std::string> labels;
+        int bar_width;
+        SHORT bar_color;
+        bool border = true;
+        struct {
+            SHORT foreground = WHITE;
+            SHORT background = BLACK;
+        } label_style;
+        struct {
+            SHORT foreground = WHITE;
+            SHORT background = BLACK;
+        } number_style;
+    };
+
     // Widget comparisons
     bool operator==(const Paragraph& paragraph1, const Paragraph& paragraph2) {
         return (
@@ -125,6 +143,31 @@ namespace tui {
             list1.text_style.background == list2.text_style.background &&
             list1.title_style.foreground == list2.title_style.foreground &&
             list1.title_style.background == list2.title_style.background
+        );
+    }
+
+    bool operator==(const BarChart& bar_chart1, const BarChart& bar_chart2) {
+        return (
+            bar_chart1.title == bar_chart2.title &&
+            bar_chart1.data == bar_chart2.data &&
+            bar_chart1.labels == bar_chart2.labels &&
+            bar_chart1.bar_width == bar_chart2.bar_width &&
+            bar_chart1.bar_color == bar_chart2.bar_color &&
+            bar_chart1.x == bar_chart2.x &&
+            bar_chart1.y == bar_chart2.y &&
+            bar_chart1.width == bar_chart2.width &&
+            bar_chart1.height == bar_chart2.height &&
+            bar_chart1.border == bar_chart2.border &&
+            bar_chart1.label_style.foreground == bar_chart2.label_style.foreground &&
+            bar_chart1.number_style.background == bar_chart2.number_style.background &&
+            bar_chart1.text_style.foreground == bar_chart2.text_style.foreground &&
+            bar_chart1.text_style.background == bar_chart2.text_style.background &&
+            bar_chart1.border_style.foreground == bar_chart2.border_style.foreground &&
+            bar_chart1.border_style.background == bar_chart2.border_style.background &&
+            bar_chart1.text_style.foreground == bar_chart2.text_style.foreground &&
+            bar_chart1.text_style.background == bar_chart2.text_style.background &&
+            bar_chart1.title_style.foreground == bar_chart2.title_style.foreground &&
+            bar_chart1.title_style.background == bar_chart2.title_style.background
         );
     }
 
@@ -420,6 +463,80 @@ namespace tui {
                     }
                 }
             }
+        }
+    }
+
+    template<>
+    void Window::add(BarChart bar_chart) {
+        if(bar_chart.border == true) {
+            draw_border(bar_chart);
+        }
+        if(bar_chart.title.empty() == false) {
+            draw_title(bar_chart);
+        }
+        // Get colors
+        SHORT label_color = get_color(
+            bar_chart.label_style.foreground, 
+            bar_chart.label_style.background
+        );
+        SHORT number_color = get_color(
+            bar_chart.number_style.foreground, 
+            bar_chart.number_style.background
+        );
+        // Get minimum and maximum values
+        int minimum = INT_MAX;
+        int maximum = INT_MIN;
+        for(int i = 0; i < bar_chart.data.size(); i++) {
+            if(bar_chart.data[i] < minimum) {
+                minimum = bar_chart.data[i];
+            }
+            if(bar_chart.data[i] > maximum) {
+                maximum = bar_chart.data[i];
+            }
+        }
+        // Draw
+        int current_bar = 0;
+        int current_character = 0;
+        for(int i = bar_chart.x + 1; i < bar_chart.x + bar_chart.width - 1; i += bar_chart.bar_width + 1) {
+            if(current_bar < bar_chart.labels.size()) {
+                for(int j = 0; j < bar_chart.bar_width; j++) {
+                    if(j < bar_chart.labels[current_bar].size() && i + j < bar_chart.x + bar_chart.width - 1) {
+                        draw_char(
+                            (i + j), 
+                            (bar_chart.y + bar_chart.height - 2),
+                            bar_chart.labels[current_bar][j],
+                            label_color
+                        );
+                    }
+                }
+            }
+            if(current_bar < bar_chart.data.size()) {
+                for(int j = 0; j < bar_chart.bar_width; j++) {
+                    std::string current_number = std::to_string(bar_chart.data[current_bar]);
+                    if(j < current_number.length() && i + j < bar_chart.x + bar_chart.width - 1) {
+                        draw_char(
+                            (i + j),
+                            (bar_chart.y + bar_chart.height - 3),
+                            current_number[j],
+                            number_color
+                        );
+                    }
+                }
+
+                float normalized = (floor)(bar_chart.data[current_bar]) / (maximum);
+                int maximum_height = bar_chart.height - 3;
+                int height = floor(normalized * maximum_height);
+                for(int y = bar_chart.y + maximum_height - height + 2; y < bar_chart.y + maximum_height + 1; y++) {
+                    for(int x = 0; x < bar_chart.bar_width; x++) {
+                        // Skip draw char to avoid overriding char
+                        content[y * columns_ + (i + x)].Attributes = get_color(
+                            number_color,
+                            bar_chart.bar_color
+                        );
+                    }
+                }
+            }
+            current_bar++;
         }
     }
 

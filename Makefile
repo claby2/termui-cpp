@@ -29,5 +29,6 @@ else
 endif
 
 build-examples:
-	g++ ./examples/paragraph.cpp -o ./examples/paragraph
-	g++ ./examples/list.cpp      -o ./examples/list
+	g++ ./examples/paragraph.cpp      -o ./examples/paragraph
+	g++ ./examples/list.cpp           -o ./examples/list
+	g++ ./examples/bar_chart.cpp      -o ./examples/bar_chart
