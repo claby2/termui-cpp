@@ -138,15 +138,19 @@ namespace tui {
     class Window {
         public:
             // Instantiate window width 
-            Window(int window_width_, int window_height_) : window_width((LONG)window_width_), window_height((LONG)window_height_) {
-                // Clear the screen first
-                clear();
-                if(window_width_ <= 0 || window_height_ < 0) {
-                    // Window width or height given is 0 or less
-                    throw TUIException("Invalid window dimensions");
-                }
+            Window(int window_width_ = 0, int window_height_ = 0) : window_width((LONG)window_width_), window_height((LONG)window_height_) {
                 // Resize console to window_width and window_height
                 console = GetConsoleWindow();
+                // Get default dimensions
+                default_width = width();
+                default_height = height();
+                // Check if no width and height was given
+                if(window_width_ <= 0 || window_height_ < 0) {
+                    // Window width or height given is 0 or less
+                    // Use default dimensions
+                    window_width = default_width;
+                    window_height = default_height;
+                }
                 RECT r;
                 GetWindowRect(console, &r);
                 MoveWindow(console, r.left, r.top, window_width, window_height, TRUE);
@@ -157,6 +161,16 @@ namespace tui {
                 // Allocate memory for content
                 content = new CHAR_INFO[columns_ * rows_];
                 memset(content, 0, sizeof(CHAR_INFO) * rows_ * columns_);
+            }
+
+            // Close the tui and revert to default settings
+            void close() {
+                clear();
+                // Render the cleared content
+                render();
+                RECT r;
+                GetWindowRect(console, &r);
+                MoveWindow(console, r.left, r.top, default_width, default_height, TRUE);
             }
 
             // Updates width, height, rows, and columns values
@@ -177,13 +191,10 @@ namespace tui {
                 SetConsoleScreenBufferSize(handle, new_size);
             }
 
-            // Clear window
-            void clear(char fill = ' ') { 
-                COORD tl = {0,0};
-                GetConsoleScreenBufferInfo(console, &csbi);
-                DWORD written, cells = csbi.dwSize.X * csbi.dwSize.Y;
-                FillConsoleOutputCharacter(console, fill, cells, tl, &written);
-                FillConsoleOutputAttribute(console, csbi.wAttributes, cells, tl, &written);
+            // Clear content
+            void clear() { 
+                // Set content to ' '
+                memset(content, 0, sizeof(CHAR_INFO) * rows_ * columns_);
             }
 
             // Hide cursor from console
@@ -275,7 +286,6 @@ namespace tui {
             // Render (print) content
             void render() {
                 SMALL_RECT sr = {0, 0, (short)(columns_ - 1), (short)(rows_ - 1)};
-                clear();
                 hide_cursor();
                 remove_scrollbar();
                 WriteConsoleOutput(handle, content, {columns_, rows_}, {0, 0}, &sr);
@@ -326,6 +336,8 @@ namespace tui {
             SHORT columns_;
             SHORT rows_;
             CHAR_INFO *content; // Content to be rendered to buffer
+            LONG default_width; // Width of the window before tui started
+            LONG default_height; // Height of the window before tui started
     };
 
     // Widget add to window method definitions
