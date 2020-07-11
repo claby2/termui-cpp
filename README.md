@@ -2,6 +2,13 @@
 
 C++ header-only terminal user interface library.
 
+termui-cpp is currently only available for Windows.
+
+## Installation
+
+1. Download the latest [single header version](https://raw.githubusercontent.com/claby2/termui-cpp/master/single_include/tui/tui.hpp).
+2. Either put the header file in a central location (with a specified path) or directly in your project tree.
+
 ## Hello World
 
 ```cpp
