@@ -1,11 +1,4 @@
-# termui-cpp
-
-C++ header-only terminal user interface library.
-
-## Hello World
-
-```cpp
-#include <tui/tui.hpp>
+#include "../single_include/tui/tui.hpp"
 
 int main() {
     // Construct window with default dimensions
@@ -35,10 +28,3 @@ int main() {
     window.close();
     return 0;
 }
-```
-
-## Widgets
-
-- [Bar Chart](./examples/bar_chart.cpp)
-- [List](./examples/list.cpp)
-- [Paragraph](./examples/paragraph.cpp)
