@@ -19,7 +19,7 @@ int main() {
     bool quit = false;
     tui::Event event;
 
-    // Add paragraph widgets to the window
+    // Add bar chart widget to the window
     window.add(bc);
 
     while(!quit) {
