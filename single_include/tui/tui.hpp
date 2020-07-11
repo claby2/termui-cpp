@@ -168,6 +168,8 @@ namespace tui {
                 clear();
                 // Render the cleared content
                 render();
+                // Show the cursor
+                show_cursor();
                 RECT r;
                 GetWindowRect(console, &r);
                 MoveWindow(console, r.left, r.top, default_width, default_height, TRUE);
@@ -200,8 +202,14 @@ namespace tui {
             // Hide cursor from console
             void hide_cursor() {
                 CONSOLE_CURSOR_INFO info;
-                info.dwSize = 100;
                 info.bVisible = FALSE;
+                SetConsoleCursorInfo(handle, &info);
+            }
+
+            // Show cursor from console
+            void show_cursor() {
+                CONSOLE_CURSOR_INFO info;
+                info.bVisible = TRUE;
                 SetConsoleCursorInfo(handle, &info);
             }
 
@@ -221,13 +229,13 @@ namespace tui {
 
             // Return number of columns
             SHORT columns() {
-                GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+                GetConsoleScreenBufferInfo(handle, &csbi);
                 return csbi.srWindow.Right - csbi.srWindow.Left;
             }
 
             // Return number of rows
             SHORT rows() {
-                GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+                GetConsoleScreenBufferInfo(handle, &csbi);
                 return csbi.srWindow.Bottom - csbi.srWindow.Top;
             }
 
