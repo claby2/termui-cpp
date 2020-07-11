@@ -203,6 +203,7 @@ namespace tui {
             void hide_cursor() {
                 CONSOLE_CURSOR_INFO info;
                 info.bVisible = FALSE;
+                info.dwSize = 100;
                 SetConsoleCursorInfo(handle, &info);
             }
 
