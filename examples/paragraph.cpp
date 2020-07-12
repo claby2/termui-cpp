@@ -1,8 +1,8 @@
 #include "../single_include/tui/tui.hpp"
 
 int main() {
-    // Construct window with 1280x780 dimensions
-    tui::Window window(1280, 720);
+    // Construct window
+    tui::Window window;
 
     window.set_title("Paragraph Example");
 
@@ -29,7 +29,7 @@ int main() {
     p3.title_style.foreground = tui::BLACK;
     p3.title_style.background = tui::WHITE;
     p3.text_style.foreground = tui::YELLOW;
-    p3.text_style.background = tui::DARK_CYAN;
+    p3.text_style.background = tui::CYAN;
 
     tui::Paragraph p4;
     p4.title = "Text Box with Wrapping";
@@ -47,7 +47,7 @@ int main() {
         if(window.poll_event(event)) {
             if(event.type == tui::KEYDOWN) {
                 switch(event.key) {
-                    case 'Q':
+                    case 'q':
                         quit = true;
                         break;
                 }

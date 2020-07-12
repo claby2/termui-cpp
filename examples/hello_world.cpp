@@ -1,7 +1,7 @@
 #include "../single_include/tui/tui.hpp"
 
 int main() {
-    // Construct window with default dimensions
+    // Construct window
     tui::Window window;
 
     window.set_title("Hello, World!");

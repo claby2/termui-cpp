@@ -1,8 +1,8 @@
 #include "../single_include/tui/tui.hpp"
 
 int main() {
-    // Construct window with 1280x780 dimensions
-    tui::Window window(1280, 720);
+    // Construct window
+    tui::Window window;
     
     window.set_title("List Example");
 
@@ -30,15 +30,13 @@ int main() {
         if(window.poll_event(event)) {
             if(event.type == tui::KEYDOWN) {
                 switch(event.key) {
-                    case 'Q':
+                    case 'q':
                         quit = true;
                         break;
-                    case 'J':
-                    case VK_DOWN:
+                    case 'j':
                         l.scroll_down(window);
                         break;
-                    case 'K':
-                    case VK_UP:
+                    case 'k':
                         l.scroll_up(window);
                         break;
                 }
