@@ -636,25 +636,31 @@ namespace tui {
                 }
             }
             if(current_bar < bar_chart.data.size()) {
-                for(int j = 0; j < bar_chart.bar_width; j++) {
-                    std::string current_number = std::to_string(bar_chart.data[current_bar]);
-                    if(j < current_number.length() && i + j < bar_chart.x + bar_chart.width - 1) {
-                        draw_char(
-                            (i + j),
-                            (bar_chart.y + bar_chart.height - 3),
-                            current_number[j],
-                            number_color
-                        );
+                auto draw_numbers = [&]() {
+                    for(int j = 0; j < bar_chart.bar_width; j++) {
+                        std::string current_number = std::to_string(bar_chart.data[current_bar]);
+                        if(j < current_number.length() && i + j < bar_chart.x + bar_chart.width - 1) {
+                            draw_char(
+                                (i + j),
+                                (bar_chart.y + bar_chart.height - 3),
+                                current_number[j],
+                                number_color
+                            );
+                        }
                     }
-                }
+                };
 
+#ifdef IS_WIN
+                // If defined IS_WIN, draw numbers before bars
+                draw_numbers();
+#endif
                 float normalized = (floor)(bar_chart.data[current_bar]) / (maximum);
                 int maximum_height = bar_chart.height - 3;
                 int height = floor(normalized * maximum_height);
                 for(int y = bar_chart.y + maximum_height - height + 2; y < bar_chart.y + maximum_height + 1; y++) {
                     for(int x = 0; x < bar_chart.bar_width; x++) {
-                        // Skip draw char to avoid overriding char
 #ifdef IS_WIN
+                            // Skip draw char to avoid overriding char
                             content[y * columns_ + (i + x)].Attributes = get_color(
                                 number_color,
                                 bar_chart.bar_color
@@ -663,12 +669,16 @@ namespace tui {
                             draw_char(
                                 (i + x),
                                 y,
-                                ' ',
+                                '#',
                                 get_color(number_color, bar_chart.bar_color)
                             );
 #endif
                     }
                 }
+#ifdef IS_POSIX
+            // If defined IS_POSIX, draw numbers before bars
+            draw_numbers();
+#endif
             }
             current_bar++;
         }
