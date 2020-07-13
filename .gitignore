@@ -2,3 +2,5 @@
 *.exe
 *.o
 test_output.txt
+!./examples/*.cpp
+!./test/*.cpp
