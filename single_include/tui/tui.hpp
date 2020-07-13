@@ -202,7 +202,6 @@ namespace tui {
         );
     }
 
-
     bool operator==(const Gauge& gauge1, const Gauge& gauge2) {
         return (
             gauge1.title == gauge2.title &&

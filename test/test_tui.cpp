@@ -371,7 +371,7 @@ TEST_CASE("Widget Representation", "[widget_representation]") {
 
 TEST_CASE("Widget Equality", "[widget_equality]") {
     // Test widget operator overloading for widget equality
-    SECTION("Paragraph", "[paragraph") {
+    SECTION("Paragraph") {
         tui::Paragraph paragraphFoo;
         paragraphFoo.title = sample_string;
         paragraphFoo.text = (sample_string + sample_string);
@@ -420,7 +420,7 @@ TEST_CASE("Widget Equality", "[widget_equality]") {
         REQUIRE(paragraphFoo == paragraphBar);
         REQUIRE(!(paragraphFoo == paragraphDifferent));
     }
-    SECTION("List", "[list") {
+    SECTION("List") {
         tui::List listFoo;
         listFoo.title = sample_string;
         listFoo.rows = {
