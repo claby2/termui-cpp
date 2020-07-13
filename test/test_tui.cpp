@@ -7,26 +7,19 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <string>
 
 std::string sample_string = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pharetra.";
 
 TEST_CASE("Widget Representation", "[widget_representation]") {
 
-    // Format of widget requirements:
-    // The requirements unordered map has a key
-    // of type int and a pair value.
-    // The int represents the index of content
-    // of a specified cell.
-    // The pair value holds two string values.
-    // The first value in the pair is a string
-    // representation of the ascii char;
-    // The second value in the pair is string
-    // representation of the attribute, which
-    // is the color of the cell.
+    // Testing for widget representation tests
+    // the relative position of different characters
+    // to account for varying terminal sizes.
 
     SECTION("Paragraph1", "[paragraph1]") {
         // Test large paragraph representation
-        tui::Window window(300, 300);
+        tui::Window window;
         tui::Paragraph paragraph;
         paragraph.title = sample_string;
         paragraph.text = sample_string;
@@ -43,30 +36,32 @@ TEST_CASE("Widget Representation", "[widget_representation]") {
         window.add(paragraph);
         
         CHAR_INFO *content = window.get_content();
-        std::unordered_map<int, std::pair<std::string, std::string> > requirements = {
-            {65, std::make_pair("43", "208")},
-            {66, std::make_pair("45", "208")},
-            {67, std::make_pair("76", "244")},
-            {97, std::make_pair("124", "208")},
-            {98, std::make_pair("76", "226")},
-            {99, std::make_pair("124", "208")},
-            {129, std::make_pair("124", "208")},
-            {130, std::make_pair("111", "226")},
-            {131, std::make_pair("124", "208")},
-            {161, std::make_pair("43", "208")},
-            {162, std::make_pair("45", "208")},
-            {163, std::make_pair("43", "208")},
+        std::vector<std::pair<std::string, std::string> > requirements = {
+            {"43", "208"},
+            {"45", "208"},
+            {"76", "244"},
+            {"124", "208"},
+            {"76", "226"},
+            {"124", "208"},
+            {"124", "208"},
+            {"111", "226"},
+            {"124", "208"},
+            {"43", "208"},
+            {"45", "208"},
+            {"43", "208"}
         };
+        int current_char = 0;
         for(int i = 0; i < window.rows() * window.columns(); i++) {
             if(std::to_string(content[i].Char.AsciiChar) != "0" && std::to_string(content[i].Attributes) != "0") {
-                REQUIRE(std::to_string(content[i].Char.AsciiChar) == requirements[i].first);
-                REQUIRE(std::to_string(content[i].Attributes) == requirements[i].second);
+                REQUIRE(std::to_string(content[i].Char.AsciiChar) == requirements[current_char].first);
+                REQUIRE(std::to_string(content[i].Attributes) == requirements[current_char].second);
+                current_char++;
             }
         }
     }
     SECTION("Paragraph2", "[paragraph2") {
         // Test large paragraph representation
-        tui::Window window(300, 300);
+        tui::Window window;
         tui::Paragraph paragraph;
         paragraph.title = sample_string;
         paragraph.text = sample_string;
@@ -83,68 +78,70 @@ TEST_CASE("Widget Representation", "[widget_representation]") {
         window.add(paragraph);
         
         CHAR_INFO *content = window.get_content();
-        std::unordered_map<int, std::pair<std::string, std::string> > requirements = {
-            {0, std::make_pair("43", "208")},
-            {1, std::make_pair("45", "208")},
-            {2, std::make_pair("76", "244")},
-            {3, std::make_pair("111", "244")},
-            {4, std::make_pair("114", "244")},
-            {32, std::make_pair("124", "208")},
-            {33, std::make_pair("76", "226")},
-            {34, std::make_pair("111", "226")},
-            {35, std::make_pair("114", "226")},
-            {36, std::make_pair("124", "208")},
-            {64, std::make_pair("124", "208")},
-            {65, std::make_pair("101", "226")},
-            {66, std::make_pair("109", "226")},
-            {67, std::make_pair("32", "226")},
-            {68, std::make_pair("124", "208")},
-            {96, std::make_pair("124", "208")},
-            {97, std::make_pair("105", "226")},
-            {98, std::make_pair("112", "226")},
-            {99, std::make_pair("115", "226")},
-            {100, std::make_pair("124", "208")},
-            {128, std::make_pair("124", "208")},
-            {129, std::make_pair("117", "226")},
-            {130, std::make_pair("109", "226")},
-            {131, std::make_pair("32", "226")},
-            {132, std::make_pair("124", "208")},
-            {160, std::make_pair("124", "208")},
-            {161, std::make_pair("100", "226")},
-            {162, std::make_pair("111", "226")},
-            {163, std::make_pair("108", "226")},
-            {164, std::make_pair("124", "208")},
-            {192, std::make_pair("124", "208")},
-            {193, std::make_pair("111", "226")},
-            {194, std::make_pair("114", "226")},
-            {195, std::make_pair("32", "226")},
-            {196, std::make_pair("124", "208")},
-            {224, std::make_pair("124", "208")},
-            {225, std::make_pair("115", "226")},
-            {226, std::make_pair("105", "226")},
-            {227, std::make_pair("116", "226")},
-            {228, std::make_pair("124", "208")},
-            {256, std::make_pair("124", "208")},
-            {257, std::make_pair("46", "226")},
-            {258, std::make_pair("46", "226")},
-            {259, std::make_pair("46", "226")},
-            {260, std::make_pair("124", "208")},
-            {288, std::make_pair("43", "208")},
-            {289, std::make_pair("45", "208")},
-            {290, std::make_pair("45", "208")},
-            {291, std::make_pair("45", "208")},
-            {292, std::make_pair("43", "208")},
+        std::vector<std::pair<std::string, std::string> > requirements = {
+            {"43", "208"},
+            {"45", "208"},
+            {"76", "244"},
+            {"111", "244"},
+            {"114", "244"},
+            {"124", "208"},
+            {"76", "226"},
+            {"111", "226"},
+            {"114", "226"},
+            {"124", "208"},
+            {"124", "208"},
+            {"101", "226"},
+            {"109", "226"},
+            {"32", "226"},
+            {"124", "208"},
+            {"124", "208"},
+            {"105", "226"},
+            {"112", "226"},
+            {"115", "226"},
+            {"124", "208"},
+            {"124", "208"},
+            {"117", "226"},
+            {"109", "226"},
+            {"32", "226"},
+            {"124", "208"},
+            {"124", "208"},
+            {"100", "226"},
+            {"111", "226"},
+            {"108", "226"},
+            {"124", "208"},
+            {"124", "208"},
+            {"111", "226"},
+            {"114", "226"},
+            {"32", "226"},
+            {"124", "208"},
+            {"124", "208"},
+            {"115", "226"},
+            {"105", "226"},
+            {"116", "226"},
+            {"124", "208"},
+            {"124", "208"},
+            {"46", "226"},
+            {"46", "226"},
+            {"46", "226"},
+            {"124", "208"},
+            {"43", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"43", "208"}
         };
+        int current_char = 0;
         for(int i = 0; i < window.rows() * window.columns(); i++) {
             if(std::to_string(content[i].Char.AsciiChar) != "0" && std::to_string(content[i].Attributes) != "0") {
-                REQUIRE(std::to_string(content[i].Char.AsciiChar) == requirements[i].first);
-                REQUIRE(std::to_string(content[i].Attributes) == requirements[i].second);
+                REQUIRE(std::to_string(content[i].Char.AsciiChar) == requirements[current_char].first);
+                REQUIRE(std::to_string(content[i].Attributes) == requirements[current_char].second);
+                current_char++;
             }
         }
     }
     SECTION("List1", "[list1]") {
         // Test list representation and scrolling functionality
-        tui::Window window(300, 300);
+        tui::Window window;
         tui::List list;
         list.title = sample_string;
         list.rows = {
@@ -168,60 +165,62 @@ TEST_CASE("Widget Representation", "[widget_representation]") {
         window.add(list);
         
         CHAR_INFO *content = window.get_content();
-        std::unordered_map<int, std::pair<std::string, std::string> > requirements = {
-            {65, std::make_pair("43", "208")},
-            {66, std::make_pair("45", "208")},
-            {67, std::make_pair("76", "244")},
-            {68, std::make_pair("111", "244")},
-            {69, std::make_pair("114", "244")},
-            {70, std::make_pair("101", "244")},
-            {71, std::make_pair("109", "244")},
-            {72, std::make_pair("32", "244")},
-            {73, std::make_pair("105", "244")},
-            {74, std::make_pair("112", "244")},
-            {75, std::make_pair("115", "244")},
-            {76, std::make_pair("117", "244")},
-            {97, std::make_pair("124", "208")},
-            {98, std::make_pair("91", "226")},
-            {99, std::make_pair("48", "226")},
-            {100, std::make_pair("93", "226")},
-            {101, std::make_pair("32", "226")},
-            {102, std::make_pair("72", "226")},
-            {103, std::make_pair("101", "226")},
-            {104, std::make_pair("108", "226")},
-            {105, std::make_pair("46", "226")},
-            {106, std::make_pair("46", "226")},
-            {107, std::make_pair("46", "226")},
-            {108, std::make_pair("124", "208")},
-            {129, std::make_pair("124", "208")},
-            {130, std::make_pair("91", "226")},
-            {131, std::make_pair("49", "226")},
-            {132, std::make_pair("93", "226")},
-            {133, std::make_pair("32", "226")},
-            {134, std::make_pair("70", "226")},
-            {135, std::make_pair("111", "226")},
-            {136, std::make_pair("111", "226")},
-            {137, std::make_pair("46", "226")},
-            {138, std::make_pair("46", "226")},
-            {139, std::make_pair("46", "226")},
-            {140, std::make_pair("124", "208")},
-            {161, std::make_pair("43", "208")},
-            {162, std::make_pair("45", "208")},
-            {163, std::make_pair("45", "208")},
-            {164, std::make_pair("45", "208")},
-            {165, std::make_pair("45", "208")},
-            {166, std::make_pair("45", "208")},
-            {167, std::make_pair("45", "208")},
-            {168, std::make_pair("45", "208")},
-            {169, std::make_pair("45", "208")},
-            {170, std::make_pair("45", "208")},
-            {171, std::make_pair("45", "208")},
-            {172, std::make_pair("43", "208")},
+        std::vector<std::pair<std::string, std::string> > requirements = {
+            {"43", "208"},
+            {"45", "208"},
+            {"76", "244"},
+            {"111", "244"},
+            {"114", "244"},
+            {"101", "244"},
+            {"109", "244"},
+            {"32", "244"},
+            {"105", "244"},
+            {"112", "244"},
+            {"115", "244"},
+            {"117", "244"},
+            {"124", "208"},
+            {"91", "226"},
+            {"48", "226"},
+            {"93", "226"},
+            {"32", "226"},
+            {"72", "226"},
+            {"101", "226"},
+            {"108", "226"},
+            {"46", "226"},
+            {"46", "226"},
+            {"46", "226"},
+            {"124", "208"},
+            {"124", "208"},
+            {"91", "226"},
+            {"49", "226"},
+            {"93", "226"},
+            {"32", "226"},
+            {"70", "226"},
+            {"111", "226"},
+            {"111", "226"},
+            {"46", "226"},
+            {"46", "226"},
+            {"46", "226"},
+            {"124", "208"},
+            {"43", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"43", "208"}
         };
+        int current_char = 0;
         for(int i = 0; i < window.rows() * window.columns(); i++) {
             if(std::to_string(content[i].Char.AsciiChar) != "0" && std::to_string(content[i].Attributes) != "0") {
-                REQUIRE(std::to_string(content[i].Char.AsciiChar) == requirements[i].first);
-                REQUIRE(std::to_string(content[i].Attributes) == requirements[i].second);
+                REQUIRE(std::to_string(content[i].Char.AsciiChar) == requirements[current_char].first);
+                REQUIRE(std::to_string(content[i].Attributes) == requirements[current_char].second);
+                current_char++;
             }
         }
         // Scroll down by factor of 100 and assert
@@ -230,59 +229,61 @@ TEST_CASE("Widget Representation", "[widget_representation]") {
         
         content = window.get_content();
         requirements = {
-            {65, std::make_pair("43", "208")},
-            {66, std::make_pair("45", "208")},
-            {67, std::make_pair("76", "244")},
-            {68, std::make_pair("111", "244")},
-            {69, std::make_pair("114", "244")},
-            {70, std::make_pair("101", "244")},
-            {71, std::make_pair("109", "244")},
-            {72, std::make_pair("32", "244")},
-            {73, std::make_pair("105", "244")},
-            {74, std::make_pair("112", "244")},
-            {75, std::make_pair("115", "244")},
-            {76, std::make_pair("117", "244")},
-            {97, std::make_pair("124", "208")},
-            {98, std::make_pair("91", "226")},
-            {99, std::make_pair("52", "226")},
-            {100, std::make_pair("93", "226")},
-            {101, std::make_pair("32", "226")},
-            {102, std::make_pair("66", "226")},
-            {103, std::make_pair("97", "226")},
-            {104, std::make_pair("114", "226")},
-            {105, std::make_pair("46", "226")},
-            {106, std::make_pair("46", "226")},
-            {107, std::make_pair("46", "226")},
-            {108, std::make_pair("124", "208")},
-            {129, std::make_pair("124", "208")},
-            {130, std::make_pair("91", "226")},
-            {131, std::make_pair("53", "226")},
-            {132, std::make_pair("93", "226")},
-            {133, std::make_pair("32", "226")},
-            {134, std::make_pair("87", "226")},
-            {135, std::make_pair("111", "226")},
-            {136, std::make_pair("114", "226")},
-            {137, std::make_pair("46", "226")},
-            {138, std::make_pair("46", "226")},
-            {139, std::make_pair("46", "226")},
-            {140, std::make_pair("124", "208")},
-            {161, std::make_pair("43", "208")},
-            {162, std::make_pair("45", "208")},
-            {163, std::make_pair("45", "208")},
-            {164, std::make_pair("45", "208")},
-            {165, std::make_pair("45", "208")},
-            {166, std::make_pair("45", "208")},
-            {167, std::make_pair("45", "208")},
-            {168, std::make_pair("45", "208")},
-            {169, std::make_pair("45", "208")},
-            {170, std::make_pair("45", "208")},
-            {171, std::make_pair("45", "208")},
-            {172, std::make_pair("43", "208")},
+            {"43", "208"},
+            {"45", "208"},
+            {"76", "244"},
+            {"111", "244"},
+            {"114", "244"},
+            {"101", "244"},
+            {"109", "244"},
+            {"32", "244"},
+            {"105", "244"},
+            {"112", "244"},
+            {"115", "244"},
+            {"117", "244"},
+            {"124", "208"},
+            {"91", "226"},
+            {"52", "226"},
+            {"93", "226"},
+            {"32", "226"},
+            {"66", "226"},
+            {"97", "226"},
+            {"114", "226"},
+            {"46", "226"},
+            {"46", "226"},
+            {"46", "226"},
+            {"124", "208"},
+            {"124", "208"},
+            {"91", "226"},
+            {"53", "226"},
+            {"93", "226"},
+            {"32", "226"},
+            {"87", "226"},
+            {"111", "226"},
+            {"114", "226"},
+            {"46", "226"},
+            {"46", "226"},
+            {"46", "226"},
+            {"124", "208"},
+            {"43", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"43", "208"}
         };
+        current_char = 0;
         for(int i = 0; i < window.rows() * window.columns(); i++) {
             if(std::to_string(content[i].Char.AsciiChar) != "0" && std::to_string(content[i].Attributes) != "0") {
-                REQUIRE(std::to_string(content[i].Char.AsciiChar) == requirements[i].first);
-                REQUIRE(std::to_string(content[i].Attributes) == requirements[i].second);
+                REQUIRE(std::to_string(content[i].Char.AsciiChar) == requirements[current_char].first);
+                REQUIRE(std::to_string(content[i].Attributes) == requirements[current_char].second);
+                current_char++;
             }
         }
         // Scroll up by a factor of 2 and assert
@@ -290,59 +291,61 @@ TEST_CASE("Widget Representation", "[widget_representation]") {
         
         content = window.get_content();
         requirements = {
-            {65, std::make_pair("43", "208")},
-            {66, std::make_pair("45", "208")},
-            {67, std::make_pair("76", "244")},
-            {68, std::make_pair("111", "244")},
-            {69, std::make_pair("114", "244")},
-            {70, std::make_pair("101", "244")},
-            {71, std::make_pair("109", "244")},
-            {72, std::make_pair("32", "244")},
-            {73, std::make_pair("105", "244")},
-            {74, std::make_pair("112", "244")},
-            {75, std::make_pair("115", "244")},
-            {76, std::make_pair("117", "244")},
-            {97, std::make_pair("124", "208")},
-            {98, std::make_pair("91", "226")},
-            {99, std::make_pair("50", "226")},
-            {100, std::make_pair("93", "226")},
-            {101, std::make_pair("32", "226")},
-            {102, std::make_pair("70", "226")},
-            {103, std::make_pair("111", "226")},
-            {104, std::make_pair("111", "226")},
-            {105, std::make_pair("46", "226")},
-            {106, std::make_pair("46", "226")},
-            {107, std::make_pair("46", "226")},
-            {108, std::make_pair("124", "208")},
-            {129, std::make_pair("124", "208")},
-            {130, std::make_pair("91", "226")},
-            {131, std::make_pair("51", "226")},
-            {132, std::make_pair("93", "226")},
-            {133, std::make_pair("32", "226")},
-            {134, std::make_pair("72", "226")},
-            {135, std::make_pair("101", "226")},
-            {136, std::make_pair("108", "226")},
-            {137, std::make_pair("46", "226")},
-            {138, std::make_pair("46", "226")},
-            {139, std::make_pair("46", "226")},
-            {140, std::make_pair("124", "208")},
-            {161, std::make_pair("43", "208")},
-            {162, std::make_pair("45", "208")},
-            {163, std::make_pair("45", "208")},
-            {164, std::make_pair("45", "208")},
-            {165, std::make_pair("45", "208")},
-            {166, std::make_pair("45", "208")},
-            {167, std::make_pair("45", "208")},
-            {168, std::make_pair("45", "208")},
-            {169, std::make_pair("45", "208")},
-            {170, std::make_pair("45", "208")},
-            {171, std::make_pair("45", "208")},
-            {172, std::make_pair("43", "208")},
+            {"43", "208"},
+            {"45", "208"},
+            {"76", "244"},
+            {"111", "244"},
+            {"114", "244"},
+            {"101", "244"},
+            {"109", "244"},
+            {"32", "244"},
+            {"105", "244"},
+            {"112", "244"},
+            {"115", "244"},
+            {"117", "244"},
+            {"124", "208"},
+            {"91", "226"},
+            {"50", "226"},
+            {"93", "226"},
+            {"32", "226"},
+            {"70", "226"},
+            {"111", "226"},
+            {"111", "226"},
+            {"46", "226"},
+            {"46", "226"},
+            {"46", "226"},
+            {"124", "208"},
+            {"124", "208"},
+            {"91", "226"},
+            {"51", "226"},
+            {"93", "226"},
+            {"32", "226"},
+            {"72", "226"},
+            {"101", "226"},
+            {"108", "226"},
+            {"46", "226"},
+            {"46", "226"},
+            {"46", "226"},
+            {"124", "208"},
+            {"43", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"45", "208"},
+            {"43", "208"}
         };
+        current_char = 0;
         for(int i = 0; i < window.rows() * window.columns(); i++) {
             if(std::to_string(content[i].Char.AsciiChar) != "0" && std::to_string(content[i].Attributes) != "0") {
-                REQUIRE(std::to_string(content[i].Char.AsciiChar) == requirements[i].first);
-                REQUIRE(std::to_string(content[i].Attributes) == requirements[i].second);
+                REQUIRE(std::to_string(content[i].Char.AsciiChar) == requirements[current_char].first);
+                REQUIRE(std::to_string(content[i].Attributes) == requirements[current_char].second);
+                current_char++;
             }
         }
     }
