@@ -54,6 +54,7 @@ int main() {
 ## Widgets
 
 - [Bar Chart](./examples/bar_chart.cpp)
+- [Gauge](./examples/gauge.cpp)
 - [List](./examples/list.cpp)
 - [Paragraph](./examples/paragraph.cpp)
 
