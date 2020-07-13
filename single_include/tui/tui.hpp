@@ -91,7 +91,8 @@ namespace tui {
             short foreground = WHITE;
             short background = BLACK;
         } title_style;
-
+        std::string title;
+        bool border = true;
         int x;      // Position of left side of widget
         int y;      // Position of top of widget
         int width;  // Width of widget
@@ -101,17 +102,12 @@ namespace tui {
     };
 
     struct Paragraph : Widget {
-        std::string title;
         std::string text;
-        bool border = true;
     };
 
     struct List : Widget{
-        std::string title;
         std::vector<std::string> rows;
         int first_element = 0; // Element at the top of the list
-        bool border = true;
-
         template<typename Window>
         void scroll_up(Window &window, int factor = 1);
         template<typename Window>
@@ -119,12 +115,10 @@ namespace tui {
     };
 
     struct BarChart : Widget {
-        std::string title;
         std::vector<int> data;
         std::vector<std::string> labels;
         int bar_width;
         short bar_color;
-        bool border = true;
         struct {
             short foreground = WHITE;
             short background = BLACK;
