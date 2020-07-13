@@ -129,6 +129,16 @@ namespace tui {
         } number_style;
     };
 
+    struct Gauge : Widget {
+        int percent;
+        std::string label;
+        short bar_color;
+        struct {
+            short foreground = WHITE;
+            short background = BLACK;
+        } label_style;
+    };
+
     // Widget comparisons
     bool operator==(const Paragraph& paragraph1, const Paragraph& paragraph2) {
         return (
@@ -189,6 +199,30 @@ namespace tui {
             bar_chart1.text_style.background == bar_chart2.text_style.background &&
             bar_chart1.title_style.foreground == bar_chart2.title_style.foreground &&
             bar_chart1.title_style.background == bar_chart2.title_style.background
+        );
+    }
+
+
+    bool operator==(const Gauge& gauge1, const Gauge& gauge2) {
+        return (
+            gauge1.title == gauge2.title &&
+            gauge1.bar_color == gauge2.bar_color &&
+            gauge1.x == gauge2.x &&
+            gauge1.y == gauge2.y &&
+            gauge1.width == gauge2.width &&
+            gauge1.height == gauge2.height &&
+            gauge1.border == gauge2.border &&
+            gauge1.percent == gauge2.percent &&
+            gauge1.label == gauge2.label &&
+            gauge1.label_style.foreground == gauge2.label_style.foreground &&
+            gauge1.text_style.foreground == gauge2.text_style.foreground &&
+            gauge1.text_style.background == gauge2.text_style.background &&
+            gauge1.border_style.foreground == gauge2.border_style.foreground &&
+            gauge1.border_style.background == gauge2.border_style.background &&
+            gauge1.text_style.foreground == gauge2.text_style.foreground &&
+            gauge1.text_style.background == gauge2.text_style.background &&
+            gauge1.title_style.foreground == gauge2.title_style.foreground &&
+            gauge1.title_style.background == gauge2.title_style.background
         );
     }
 
@@ -676,11 +710,72 @@ namespace tui {
                     }
                 }
 #ifdef IS_POSIX
-            // If defined IS_POSIX, draw numbers before bars
+            // If defined IS_POSIX, draw numbers after bars
             draw_numbers();
 #endif
             }
             current_bar++;
+        }
+    }
+
+    template<>
+    void Window::add(Gauge gauge) {
+        if(gauge.border == true) {
+            draw_border(gauge);
+        }
+        if(gauge.title.empty() == false) {
+            draw_title(gauge);
+        }
+        // Get color
+        short label_color = get_color(
+            gauge.label_style.foreground, 
+            gauge.label_style.background
+        );
+        // Draw bar
+        int bar_width = floor(((float)gauge.percent / 100) * (gauge.width - 2));
+        for(int i = gauge.y + 1; i < gauge.y + gauge.height - 1; i++) {
+            for(int j = gauge.x + 1; j < gauge.x + gauge.width - 1; j++) {
+                // Naively assume character is empty
+                draw_char(j, i, ' ');
+                if((j - (gauge.x + 1)) < bar_width) {
+#ifdef IS_WIN
+                    content[(i * columns_) + j].Attributes = get_color(
+                        gauge.label_style.foreground,
+                        gauge.bar_color
+                    );
+#elif defined(IS_POSIX)
+                    draw_char(
+                        j,
+                        i,
+                        '#',
+                        get_color(gauge.label_style.foreground, gauge.bar_color)
+                    );
+#endif
+                }
+            }
+        }
+        // Draw label
+        int label_y = gauge.y + floor(gauge.height / 2);
+        int current_char = 0;
+        for(int i = gauge.x + 1; i < gauge.x + gauge.width - 1; i++) {
+            if(current_char < gauge.label.length()) {
+                short color;
+                if(i - (gauge.x + 1) < bar_width) {
+                    // If label is to be drawn in a bar cell,
+                    // background color of bar should override 
+                    // background color of label
+                    color = get_color(label_color, gauge.bar_color);
+                } else {
+                    color = label_color;
+                }
+                draw_char(
+                    i,
+                    label_y,
+                    gauge.label[current_char],
+                    color
+                );
+            }
+            current_char++;
         }
     }
 

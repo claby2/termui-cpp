@@ -32,6 +32,7 @@ endif
 
 build-examples:
 	g++ -std=c++17 ./examples/bar_chart.cpp   $(ncurses-flag) -o ./examples/bar_chart
+	g++ -std=c++17 ./examples/gauge.cpp       $(ncurses-flag) -o ./examples/gauge
 	g++ -std=c++17 ./examples/hello_world.cpp $(ncurses-flag) -o ./examples/hello_world
 	g++ -std=c++17 ./examples/list.cpp        $(ncurses-flag) -o ./examples/list
 	g++ -std=c++17 ./examples/paragraph.cpp   $(ncurses-flag) -o ./examples/paragraph
