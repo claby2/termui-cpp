@@ -2,11 +2,29 @@
 #include "../single_include/tui/tui.hpp"
 
 #ifdef _WIN32
+#   define IS_WIN
 #include <windows.h>
-#include <fstream>
-#include <string>
-#include <unordered_map>
-#include <utility>
+#else
+#   define IS_POSIX
+#endif
+
+TEST_CASE("Widget Set Dimensions", "[widget_set_dimensions]") {
+    tui::Paragraph paragraph;
+    paragraph.set_dimensions(1, 2, 3, 4);
+    REQUIRE(paragraph.x == 1);
+    REQUIRE(paragraph.y == 2);
+    REQUIRE(paragraph.width == 3);
+    REQUIRE(paragraph.height == 4);
+    
+    tui::List list;
+    list.set_dimensions(5, 6, 7, 8);
+    REQUIRE(list.x == 5);
+    REQUIRE(list.y == 6);
+    REQUIRE(list.width == 7);
+    REQUIRE(list.height == 8);
+}
+
+#ifdef IS_WIN
 #include <string>
 
 std::string sample_string = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pharetra.";
@@ -462,22 +480,6 @@ TEST_CASE("Widget Equality", "[widget_equality]") {
     }
 }
 
-TEST_CASE("Widget Set Dimensions", "[widget_set_dimensions]") {
-    tui::Paragraph paragraph;
-    paragraph.set_dimensions(1, 2, 3, 4);
-    REQUIRE(paragraph.x == 1);
-    REQUIRE(paragraph.y == 2);
-    REQUIRE(paragraph.width == 3);
-    REQUIRE(paragraph.height == 4);
-    
-    tui::List list;
-    list.set_dimensions(5, 6, 7, 8);
-    REQUIRE(list.x == 5);
-    REQUIRE(list.y == 6);
-    REQUIRE(list.width == 7);
-    REQUIRE(list.height == 8);
-}
-
 TEST_CASE("Color Handling", "[color_handling]") {
     // Test color constants and bitwise operations
     REQUIRE(tui::get_color(tui::BLACK, tui::WHITE)            == 0x00F0);
@@ -498,12 +500,6 @@ TEST_CASE("Color Handling", "[color_handling]") {
     REQUIRE(tui::get_color(tui::BLUE, tui::DARK_YELLOW)       == 0x0069);
     REQUIRE(tui::get_color(tui::DARK_GRAY, tui::GRAY)         == 0x0078);
 }
-#elif __linux__
-// LINUX INCLUDES
-#else
-#if (defined (__APPLE__) && defined (__MACH__))
-// APPLE INCLUDES
-#else
-    #error PLATFORM NOT SUPPORTED
-#endif
+#elif defined(IS_POSIX)
+
 #endif
